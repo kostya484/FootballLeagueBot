@@ -350,7 +350,6 @@ def buy_player(user_id, player_id):
         "SELECT club FROM users WHERE user_id=?",
         (user_id,)
     )
-
     user = cur.fetchone()
 
     if not user:
@@ -360,13 +359,10 @@ def buy_player(user_id, player_id):
     club = user[0]
 
     cur.execute("""
-    SELECT
-        name,
-        price
+    SELECT name, price
     FROM players
     WHERE player_id=?
     """, (player_id,))
-
     player = cur.fetchone()
 
     if not player:
@@ -381,7 +377,6 @@ def buy_player(user_id, player_id):
     FROM clubs
     WHERE name=?
     """, (club,))
-
     budget = cur.fetchone()[0]
 
     if budget < price:
@@ -389,23 +384,21 @@ def buy_player(user_id, player_id):
         return False
 
     if squad_count(user_id) >= 25:
-    con.close()
-    return False
+        con.close()
+        return False
 
-if player_in_squad(user_id, player_id):
-    con.close()
-    return False
+    if player_in_squad(user_id, player_id):
+        con.close()
+        return False
 
-    # Добавляем игрока
     cur.execute("""
-    INSERT INTO squads
+    INSERT INTO squads(user_id, player_id)
     VALUES(?,?)
     """, (
         user_id,
         player_id
     ))
 
-    # Снимаем деньги
     cur.execute("""
     UPDATE clubs
     SET budget = budget - ?
@@ -415,10 +408,8 @@ if player_in_squad(user_id, player_id):
         club
     ))
 
-    # История трансферов
     cur.execute("""
-    INSERT INTO transfers
-    (
+    INSERT INTO transfers(
         user_id,
         player_id,
         player_name,
