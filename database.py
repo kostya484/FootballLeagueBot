@@ -391,6 +391,54 @@ def buy_player(user_id, player_id):
     if squad_count(user_id) >= 25:
         con.close()
         return False
+        if player_in_squad(user_id, player_id):
+        con.close()
+        return False
+
+    # Добавляем игрока
+    cur.execute("""
+    INSERT INTO squads
+    VALUES(?,?)
+    """, (
+        user_id,
+        player_id
+    ))
+
+    # Снимаем деньги
+    cur.execute("""
+    UPDATE clubs
+    SET budget = budget - ?
+    WHERE name=?
+    """, (
+        price,
+        club
+    ))
+
+    # История трансферов
+    cur.execute("""
+    INSERT INTO transfers
+    (
+        user_id,
+        player_id,
+        player_name,
+        price,
+        action,
+        date
+    )
+    VALUES(?,?,?,?,?,?)
+    """, (
+        user_id,
+        player_id,
+        name,
+        price,
+        "Покупка",
+        datetime.now().strftime("%d.%m.%Y %H:%M")
+    ))
+
+    con.commit()
+    con.close()
+
+    return True
 # ==========================
 # ПРОДАЖА ИГРОКА
 # ==========================
