@@ -391,7 +391,8 @@ def buy_player(user_id, player_id):
     if squad_count(user_id) >= 25:
         con.close()
         return False
-        if player_in_squad(user_id, player_id):
+
+    if player_in_squad(user_id, player_id):
         con.close()
         return False
 
